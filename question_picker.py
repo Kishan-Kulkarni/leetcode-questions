@@ -1,44 +1,54 @@
-import streamlit as st
+from flask import Flask, render_template, request, redirect, session
 import pandas as pd
 import random
+import os
 
-# Load the data from the CSV file
-file_path = 'google_alltime.csv'  # Update with your file path
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Necessary for session management
+
+# Load the CSV file
+file_path = 'google_alltime.csv'
 data = pd.read_csv(file_path)
 
-# Add a "Completed" column to the dataframe
-data['Completed'] = False
+# Ensure the CSV has the necessary columns
+if 'Completed' not in data.columns:
+    data['Completed'] = False
+if 'Notes' not in data.columns:
+    data['Notes'] = ""
 
-# Dashboard Title
-st.title("LeetCode Question Dashboard")
+# Helper function to check if all current questions are completed
+def all_completed(question_ids):
+    return all(data.loc[data['ID'].isin(question_ids), 'Completed'])
 
-# Sidebar for options
-st.sidebar.header("Options")
+# Route to serve the questions
+@app.route('/')
+def home():
+    # Check if the current session already has a list of questions
+    if 'current_questions' not in session or all_completed(session['current_questions']):
+        not_completed = data[data['Completed'] == False]
+        if len(not_completed) == 0:
+            session['current_questions'] = []
+            return render_template('index.html', questions=[], message="All questions have been completed!")
+        random_questions = not_completed.sample(n=10) if len(not_completed) >= 10 else not_completed
+        session['current_questions'] = random_questions['ID'].tolist()
 
-# Sort by difficulty
-difficulty = st.sidebar.selectbox("Sort by Difficulty", ["All", "Easy", "Medium", "Hard"])
-if difficulty != "All":
-    data = data[data['Difficulty'] == difficulty]
+    # Fetch the current list of questions
+    questions = data[data['ID'].isin(session['current_questions'])].to_dict(orient='records')
+    return render_template('index.html', questions=questions)
 
-# Show completed or not completed questions
-show_completed = st.sidebar.checkbox("Show Completed Questions", value=False)
-if show_completed:
-    st.dataframe(data[data['Completed'] == True])
-else:
-    st.dataframe(data[data['Completed'] == False])
+# Route to handle marking a question as completed and adding notes
+@app.route('/complete', methods=['POST'])
+def complete():
+    question_id = int(request.form['question_id'])
+    note = request.form['note']
 
-# Mark questions as completed
-selected_ids = st.multiselect("Mark Questions as Completed (by ID)", data['ID'].tolist())
-if selected_ids:
-    data.loc[data['ID'].isin(selected_ids), 'Completed'] = True
-    st.success(f"Marked questions {selected_ids} as completed.")
+    # Update the CSV with completion status and note
+    data.loc[data['ID'] == question_id, 'Completed'] = True
+    data.loc[data['ID'] == question_id, 'Notes'] = note
+    data.to_csv(file_path, index=False)
 
-# Randomly select 10 questions that aren't completed
-if st.button("Get 10 Random Questions"):
-    not_completed = data[data['Completed'] == False]
-    random_questions = not_completed.sample(n=10)
-    st.write("Here are 10 random questions:")
-    st.dataframe(random_questions)
+    return redirect('/')
 
-# Save changes to the CSV file
-data.to_csv('google_alltime_updated.csv', index=False)
+# Run the Flask app
+if __name__ == "__main__":
+    app.run(debug=True)

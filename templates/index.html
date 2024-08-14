@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LeetCode Random Questions</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+      }
+
+      .container:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      h1 {
+        text-align: center;
+        color: #0056b3;
+        font-weight: 600;
+        margin-bottom: 30px;
+      }
+
+      .question {
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+      }
+
+      .question:last-child {
+        border-bottom: none;
+      }
+
+      .question h3 {
+        margin-top: 0;
+        color: #007bff;
+        font-size: 22px;
+        font-weight: 500;
+      }
+
+      .question p {
+        margin: 5px 0;
+        color: #555;
+        font-size: 16px;
+      }
+
+      .question a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .question a:hover {
+        text-decoration: underline;
+        color: #0056b3;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        font-size: 16px;
+        color: #333;
+        resize: vertical;
+        background-color: #f9f9f9;
+      }
+
+      textarea:focus {
+        border-color: #007bff;
+        outline: none;
+        background-color: #ffffff;
+      }
+
+      button {
+        background-color: #007bff;
+        color: #fff;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+      }
+
+      button:active {
+        background-color: #004494;
+        transform: translateY(0);
+      }
+
+      .footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 14px;
+        color: #888;
+        margin-top: 30px;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .footer a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+        color: #0056b3;
+      }
+
+      .message {
+        text-align: center;
+        font-size: 18px;
+        color: #28a745;
+        margin-bottom: 20px;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Random LeetCode Questions</h1>
+      {% if message %}
+      <p class="message">{{ message }}</p>
+      {% else %}
+      <form action="/complete" method="POST">
+        {% for question in questions %}
+        <div class="question">
+          <h3>{{ question['Title'] }} (ID: {{ question['ID'] }})</h3>
+          <p><strong>Difficulty:</strong> {{ question['Difficulty'] }}</p>
+          <p><strong>Acceptance:</strong> {{ question['Acceptance'] }}</p>
+          <p>
+            <a href="{{ question['Leetcode Question Link'] }}" target="_blank"
+              >Open Question</a
+            >
+          </p>
+          <label for="note_{{ question['ID'] }}">Notes:</label><br />
+          <textarea
+            name="note"
+            id="note_{{ question['ID'] }}"
+            rows="4"
+            placeholder="Add your notes here..."
+          ></textarea
+          ><br />
+          <input
+            type="hidden"
+            name="question_id"
+            value="{{ question['ID'] }}"
+          />
+          <button type="submit">Mark as Completed</button>
+        </div>
+        {% endfor %}
+      </form>
+      {% endif %}
+    </div>
+    <div class="footer">
+      <p>
+        Powered by
+        <a href="https://flask.palletsprojects.com/" target="_blank">Flask</a>
+      </p>
+    </div>
+  </body>
+</html>
