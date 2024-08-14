@@ -1,1 +1,1 @@
-web: gunicorn app:app
+web: gunicorn question_picker:app
